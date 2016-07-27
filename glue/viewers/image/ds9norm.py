@@ -124,6 +124,19 @@ class DS9Normalize(Normalize, object):
         self.clip_lo = 5.
         self.clip_hi = 95.
 
+        # modified by Maxwell X. Cai
+        # override the default setting if preset file exists
+        import os
+        if os.path.isfile('/tmp/glue_image_viewer_ds9norm_preset'):
+            f_preset = open('/tmp/glue_image_viewer_ds9norm_preset', 'r')
+            self.stretch = f_preset.readline().strip()
+            self.bias = float(f_preset.readline())
+            self.contrast = float(f_preset.readline())
+            self.clip_lo = float(f_preset.readline())
+            self.clip_hi = float(f_preset.readline())
+            f_preset.close()
+        # modification ends
+
     @property
     def stretch(self):
         return self._stretch
@@ -155,6 +168,17 @@ class DS9Normalize(Normalize, object):
             result = np.subtract(1, result, out=result)
 
         result = np.ma.MaskedArray(result, copy=False)
+
+        # Modified by Maxwell X. Cai
+        # save preset
+        f_preset = open('/tmp/glue_image_viewer_ds9norm_preset', 'w')
+        f_preset.write('%s\n' % self.stretch)
+        f_preset.write('%f\n' % self.bias)
+        f_preset.write('%f\n' % self.contrast)
+        f_preset.write('%f\n' % self.clip_lo)
+        f_preset.write('%f\n' % self.clip_hi)
+        f_preset.close()
+        # Modification ends
 
         return result
 
